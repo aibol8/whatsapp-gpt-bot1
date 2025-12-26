@@ -1,7 +1,7 @@
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 from config import OPENAI_API_KEY, BOOKING_LINK, SALON_NAME
-import openai
+import os
 
 app = Flask(__name__)
 openai.api_key = OPENAI_API_KEY
@@ -32,4 +32,6 @@ def whatsapp_webhook():
     return str(resp)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
