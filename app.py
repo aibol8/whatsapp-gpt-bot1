@@ -22,7 +22,7 @@ def whatsapp_webhook():
     resp = MessagingResponse()
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4.0-mini",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": incoming_msg}
