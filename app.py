@@ -1,15 +1,10 @@
-import os
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-import openai
+from openai import OpenAI
+from config import OPENAI_API_KEY, BOOKING_LINK, SALON_NAME
 
 app = Flask(__name__)
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-BOOKING_LINK = os.getenv("BOOKING_LINK")
-SALON_NAME = os.getenv("SALON_NAME")
-
-openai.api_key = OPENAI_API_KEY
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 SYSTEM_PROMPT = f"""Ты вежливый администратор салона {SALON_NAME}.
 Отвечай на любые вопросы клиентов о салоне, мастерах, услугах и ценах.
@@ -18,10 +13,11 @@ SYSTEM_PROMPT = f"""Ты вежливый администратор салон�
 
 @app.route("/whatsapp", methods=["POST"])
 def whatsapp_webhook():
-    incoming_msg = request.values.get('Body', '')
+    incoming_msg = request.values.get("Body", "")
     resp = MessagingResponse()
+
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
@@ -29,11 +25,13 @@ def whatsapp_webhook():
             ]
         )
         reply = response.choices[0].message.content
-    except Exception:
-        reply = "Извините, произошла ошибка, попробуйте позже."
+    except Exception as e:
+        print("ERROR:", e)
+        reply = "Извините, произошла ошибка. Попробуйте позже."
+
     resp.message(reply)
     return str(resp)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    app.run()
+
